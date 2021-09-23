@@ -21,8 +21,3 @@ class Player(pygame.sprite.Sprite):
     def update(self, *args):
         self.image = pygame.transform.scale(self.image, [100, 100])
 
-    def jump(self,*args):
-        pass
-
-    def dead(self, *args):
-        pass
