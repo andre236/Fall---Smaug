@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import*
+from player import Player
 import sys
 
 #inicializando os modulos do pygame
@@ -87,26 +88,37 @@ class GameState():
             pygame.display.update()
 
     def first_cutscene(self):
+
+        def draw_game():
+            draw_group.draw(display_game)
+
         for event in pygame.event.get():
             # condicional para sair do loop
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-
-            # draw_game()
+            draw_game()
             # atualizando os dados na tela
             pygame.display.update()
 
     def level_01(self):
         # Definindo BG
         background_scenetest = pygame.image.load('images/bg/background1.png')
-        background_scenetest = pygame.transform.scale(background_scenetest, (1920, 1080))
+        background_scenetest = pygame.transform.scale(background_scenetest, (1920, 1200))
         display_game.blit(background_scenetest, (0, 0))
+        pygame.mixer.music.stop()
+        player = Player()
+
+        def draw_game():
+            draw_group.empty()
+            display_game.blit(background_scenetest, (0, 0))
+            player.add(draw_group)
+            draw_group.draw(display_game)
 
         for event in pygame.event.get():
             # condicional para sair do loop
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or keys.get_pressed()[pygame.K_ESCAPE]:
                 pygame.quit()
                 sys.exit()
 
