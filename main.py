@@ -1,24 +1,25 @@
 import pygame
 from pygame.locals import*
+
+import main
 from player import Player
 import sys
 
-#inicializando os modulos do pygame
+#Inicializando os modulos do pygame
 pygame.init()
 
-#configurações
-black_color = (22, 22, 22)
+#Configurações
 font = pygame.font.SysFont('Montserrat', 48)
 running_game = True
+clock = pygame.time.Clock()
 
-#criando a janela do jogo
+#Criando a janela do jogo
 width = 1920
 height = 1080
 display_game = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Fall')
-display_game.fill(black_color)
 
-# configurando o BGM
+# Configurando o BGM
 pygame.mixer.music.load('musics/bgm/mainmenu.ogg')
 pygame.mixer.music.play(-1, 0.0)
 
@@ -31,15 +32,20 @@ keys = pygame.key
 #Group
 draw_group = pygame.sprite.Group()
 
+#
+call_started = 1
+
 class GameState():
+    main.call_started
+
     def __init__(self):
         self.state = 'menu_scene'
 
     def menu_scene(self):
         # Definindo BG
         background = pygame.image.load('images/misc/Menu.png')
-        background = pygame.transform.scale(background, (1920, 1080))
-        display_game.blit(background, (120, 0))
+        background = pygame.transform.scale(background, [1920, 1080])
+        display_game.blit(background, [120, 0])
 
         # Criando os botoes de Menu
         start_button = pygame.sprite.Sprite(draw_group)
@@ -59,8 +65,8 @@ class GameState():
             mouse_position = pygame.mouse.get_pos()
             if start_button.rect.collidepoint(mouse_position):
                 if pygame.mouse.get_pressed(3)[0] == 1:
+                    draw_group.empty()
                     self.state = 'level_01'
-
             if options_button.rect.collidepoint(mouse_position):
                 if pygame.mouse.get_pressed(3)[0] == 1:
                     print("Abrir opcoes")
@@ -104,16 +110,17 @@ class GameState():
 
     def level_01(self):
         # Definindo BG
-        background_scenetest = pygame.image.load('images/bg/background1.png')
-        background_scenetest = pygame.transform.scale(background_scenetest, (1920, 1200))
-        display_game.blit(background_scenetest, (0, 0))
+        background_forest = pygame.image.load('images/bg/background1.png')
+        background_forest = pygame.transform.scale(background_forest, [1920, 1080])
+        display_game.blit(background_forest, [0, 0])
         pygame.mixer.music.stop()
-        player = Player()
+
+
+        def draw_initial():
+            player = Player(draw_group)
+            print("Fui Chamado")
 
         def draw_game():
-            draw_group.empty()
-            display_game.blit(background_scenetest, (0, 0))
-            player.add(draw_group)
             draw_group.draw(display_game)
 
         for event in pygame.event.get():
@@ -122,8 +129,13 @@ class GameState():
                 pygame.quit()
                 sys.exit()
 
-            draw_game()
             # atualizando os dados na tela
+            if main.call_started == 1:
+                main.call_started = 0
+                draw_initial()
+
+            draw_game()
+            draw_group.update()
             pygame.display.update()
 
     def state_manager(self):
@@ -134,10 +146,10 @@ class GameState():
         if self.state == 'level_01':
             self.level_01()
 
-# estado do jogo
+# Estado do jogo
 game_state = GameState()
 
-# loop do jogo
+# Loop do jogo
 while running_game:
     game_state.state_manager()
 
