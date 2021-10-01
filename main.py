@@ -2,7 +2,9 @@ import pygame
 from pygame.locals import*
 
 import main
+import player
 from player import Player
+from object import Object
 import sys
 
 #Inicializando os modulos do pygame
@@ -112,13 +114,12 @@ class GameState():
         # Definindo BG
         background_forest = pygame.image.load('images/bg/background1.png')
         background_forest = pygame.transform.scale(background_forest, [1920, 1080])
-        display_game.blit(background_forest, [0, 0])
+        display_game.blit(background_forest, [0, 30])
         pygame.mixer.music.stop()
-
 
         def draw_initial():
             player = Player(draw_group)
-            print("Fui Chamado")
+            # box = Object(draw_group)
 
         def draw_game():
             draw_group.draw(display_game)
@@ -134,9 +135,12 @@ class GameState():
                 main.call_started = 0
                 draw_initial()
 
+
+            draw_group.update(draw_group)
             draw_game()
-            draw_group.update()
             pygame.display.update()
+            clock.tick(60)
+
 
     def state_manager(self):
         if self.state == 'menu_scene':
