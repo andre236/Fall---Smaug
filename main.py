@@ -1,21 +1,23 @@
 import pygame
-from pygame.locals import*
+from pygame.locals import *
 
 import main
 import player
 from player import Player
 from object import Object
+from time import sleep
+from scene import Scene
 import sys
 
-#Inicializando os modulos do pygame
+# Inicializando os modulos do pygame
 pygame.init()
 
-#Configurações
+# Configurações
 font = pygame.font.SysFont('Montserrat', 48)
 running_game = True
 clock = pygame.time.Clock()
 
-#Criando a janela do jogo
+# Criando a janela do jogo
 width = 1920
 height = 1080
 display_game = pygame.display.set_mode((width, height))
@@ -25,34 +27,59 @@ pygame.display.set_caption('Fall')
 pygame.mixer.music.load('musics/bgm/mainmenu.ogg')
 pygame.mixer.music.play(-1, 0.0)
 
-#SFXs
+# SFXs
 selecting_sfx = pygame.mixer.Sound('musics/sfx/selecting.ogg')
 
-#Keys temporarias
+# Keys temporarias
 keys = pygame.key
 
-#Group
+# Group
 draw_group = pygame.sprite.Group()
 
 # Definindo Player
 player = Player(draw_group)
 player_rect = player.rect
+# Definindo Box
+box = Object(draw_group)
+box.rect = pygame.Rect(500,600,80,80)
+# Definindo os Levels
+scene = Scene()
 
-#
+# Variables Global
 call_started = 1
+scroll_speed = 0
+scroll_max_speed = 10
+scroll_acceleration = 0.9
+
+# Condicao para passar cutscene
+running_initial_cutscene = True
+
 
 class GameState():
     main.call_started
+    main.running_initial_cutscene
     draw_group.empty()
 
     def __init__(self):
+        bg_main_menu = pygame.image.load('images/misc/Menu.png')
+        bg_main_menu = pygame.transform.scale(bg_main_menu, [1920, 1080])
+        for alpha in range(0, 300):
+            bg_main_menu.set_alpha(alpha)
+            display_game.blit(bg_main_menu, [120, 0])
+            pygame.display.update()
+            pygame.time.delay(5)
         self.state = 'menu_scene'
+        self.substate = 'level_01a'
 
     def menu_scene(self):
+        black_color = (0, 0, 0)
+        fade_to_black = pygame.Surface((1920, 1080))
+        fade_to_black.fill((0, 0, 0))
+
         # Definindo BG
-        background = pygame.image.load('images/misc/Menu.png')
-        background = pygame.transform.scale(background, [1920, 1080])
-        display_game.blit(background, [120, 0])
+        bg_main_menu = pygame.image.load('images/misc/Menu.png')
+        bg_main_menu = pygame.transform.scale(bg_main_menu, [1920, 1080])
+        display_game.blit(bg_main_menu, [120, 0])
 
         # Criando os botoes de Menu
         start_button = pygame.sprite.Sprite(draw_group)
@@ -73,7 +100,14 @@ class GameState():
             if start_button.rect.collidepoint(mouse_position):
                 if pygame.mouse.get_pressed(3)[0] == 1:
                     draw_group.empty()
+                    pygame.mixer.music.fadeout(1000)
                     self.state = 'first_cutscene'
+
+                if pygame.mouse.get_pressed(3)[0] == 1 and keys.get_pressed()[pygame.K_c]:
+                    draw_group.empty()
+                    pygame.mixer.music.fadeout(1000)
+                    self.state = 'level_01'
+
             if options_button.rect.collidepoint(mouse_position):
                 if pygame.mouse.get_pressed(3)[0] == 1:
                     print("Abrir opcoes")
@@ -130,61 +164,70 @@ class GameState():
         alpha_scene_04 = 0
         pygame.Surface.set_alpha(scene_04, alpha_scene_04)
         display_game.blit(scene_04, [0, 30])
-
-
-        pygame.mixer.music.stop()
-        for alpha_scene_01 in range(0, 300):
-            pygame.Surface.set_alpha(scene_01, alpha_scene_01)
-            display_game.blit(scene_01, [0, 30])
-            pygame.display.update()
-            pygame.time.delay(5)
-
-        for alpha in range(0 , 300):
-            fade_to_black.set_alpha(alpha)
-            display_game.blit(fade_to_black, [0,0])
-            pygame.display.update()
-            pygame.time.delay(5)
-
-        for alpha_scene_02 in range(0, 300):
-            pygame.Surface.set_alpha(scene_02, alpha_scene_02)
-            display_game.blit(scene_02, [0, 30])
-            pygame.display.update()
-            pygame.time.delay(5)
-
-        for alpha in range(0 , 300):
-            fade_to_black.set_alpha(alpha)
-            display_game.blit(fade_to_black, [0,0])
-            pygame.display.update()
-            pygame.time.delay(5)
-
-        for alpha_scene_03 in range(0, 300):
-            pygame.Surface.set_alpha(scene_03, alpha_scene_03)
-            display_game.blit(scene_03, [0, 30])
-            pygame.display.update()
-            pygame.time.delay(5)
-
-        for alpha in range(0 , 300):
-            fade_to_black.set_alpha(alpha)
-            display_game.blit(fade_to_black, [0,0])
-            pygame.display.update()
-            pygame.time.delay(5)
-
-        for alpha_scene_04 in range(0, 300):
-            pygame.Surface.set_alpha(scene_04, alpha_scene_04)
-            display_game.blit(scene_04, [0, 30])
-            pygame.display.update()
-            pygame.time.delay(5)
-
-        for alpha in range(0 , 298):
-            fade_to_black.set_alpha(alpha)
-            display_game.blit(fade_to_black, [0,0])
-            pygame.display.update()
-            pygame.time.delay(5)
-            for alpha in range( 299, 300):
-                self.state = 'level_01'
-
+        pygame.mixer.music.fadeout(1000)
 
         def draw_game():
+            if keys.get_pressed()[pygame.K_SPACE] or keys.get_pressed()[pygame.K_KP_ENTER] or keys.get_pressed()[pygame.KSCAN_KP_ENTER]:
+                print('fui chamado')
+                main.running_initial_cutscene = False
+                self.state = 'level_01'
+
+            for alpha in range(0, 300):
+                fade_to_black.set_alpha(alpha)
+                display_game.blit(fade_to_black, [0, 0])
+                pygame.display.update()
+                pygame.time.delay(5)
+
+            for alpha_scene_01 in range(0, 300):
+                pygame.Surface.set_alpha(scene_01, alpha_scene_01)
+                display_game.blit(scene_01, [0, 30])
+                pygame.display.update()
+                pygame.time.delay(5)
+
+            for alpha in range(0, 300):
+                fade_to_black.set_alpha(alpha)
+                display_game.blit(fade_to_black, [0, 0])
+                pygame.display.update()
+                pygame.time.delay(5)
+
+            for alpha_scene_02 in range(0, 300):
+                pygame.Surface.set_alpha(scene_02, alpha_scene_02)
+                display_game.blit(scene_02, [0, 30])
+                pygame.display.update()
+                pygame.time.delay(5)
+
+            for alpha in range(0, 300):
+                fade_to_black.set_alpha(alpha)
+                display_game.blit(fade_to_black, [0, 0])
+                pygame.display.update()
+                pygame.time.delay(5)
+
+            for alpha_scene_03 in range(0, 300):
+                pygame.Surface.set_alpha(scene_03, alpha_scene_03)
+                display_game.blit(scene_03, [0, 30])
+                pygame.display.update()
+                pygame.time.delay(5)
+
+            for alpha in range(0, 300):
+                fade_to_black.set_alpha(alpha)
+                display_game.blit(fade_to_black, [0, 0])
+                pygame.display.update()
+                pygame.time.delay(5)
+
+            for alpha_scene_04 in range(0, 300):
+                pygame.Surface.set_alpha(scene_04, alpha_scene_04)
+                display_game.blit(scene_04, [0, 30])
+                pygame.display.update()
+                pygame.time.delay(5)
+
+            for alpha in range(0, 298):
+                fade_to_black.set_alpha(alpha)
+                display_game.blit(fade_to_black, [0, 0])
+                pygame.display.update()
+                pygame.time.delay(5)
+                for alpha in range(299, 300):
+                    self.state = 'level_01'
+
             draw_group.draw(display_game)
 
         for event in pygame.event.get():
@@ -194,25 +237,77 @@ class GameState():
                 sys.exit()
 
         draw_game()
+        jumping_cutscene()
         # atualizando os dados na tela
         pygame.display.update()
 
     def level_01(self):
-        # Definindo BG
-        background_forest = pygame.image.load('images/bg/background1.png')
-        background_forest = pygame.transform.scale(background_forest, [1920, 1080])
-        display_game.blit(background_forest, [0, 30])
-        pygame.mixer.music.fadeout(1000)
-        # Definindo BGS
+        if self.state == 'level_01':
+            display_game.blit(scene.bg_level, [scene.bg_level_pos_x + scroll_speed, scene.bg_level_pos_y])
+            # Rects para passagem de mapa
+            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2600 + main.scroll_speed, 550, 68, 147))
 
+            # Definindo BGS
+            def draw_initial():
+                pygame.mixer.music.load('musics/bgs/forest2.ogg')
+                pygame.mixer.music.play(-1, 0.0)
+                player = Player(draw_group)
+                player.rect.x = 400
+                player.new_rect_y = 650
+                box = Object(draw_group)
+                box.rect.x = 600 + main.scroll_speed
+
+            def draw_game():
+                draw_group.draw(display_game)
+
+            for event in pygame.event.get():
+                # condicional para sair do loop
+                if event.type == pygame.QUIT or keys.get_pressed()[pygame.K_ESCAPE]:
+                    pygame.quit()
+                    sys.exit()
+
+                # atualizando os dados na tela
+            if main.call_started == 1:
+                main.call_started = 0
+                draw_initial()
+
+            if pygame.Rect.colliderect(player.rect, level_01b):
+                level_01b.width = 0
+                level_01b.height = 0
+                main.scroll_speed = 0
+                main.call_started = 1
+                self.state = 'level_02'
+
+            # Effect SCrolling Left
+            if keys.get_pressed()[pygame.K_d] or keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 500 and player.rect.x < 1511:
+                main.scroll_speed -= 1
+            elif keys.get_pressed()[pygame.K_a] or keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 500 and player.rect.x < 1511:
+                main.scroll_speed += 1
+
+            player.update()
+            draw_group.update()
+            draw_game()
+            pygame.display.update()
+        else:
+            pass
+
+    def level_02(self):
+        display_game.blit(scene.bg_level2, [scene.bg_level_pos_x + scroll_speed, scene.bg_level_pos_y])
+        # Rects para passagem de mapa
+
+        # Definindo BGS
         def draw_initial():
+            draw_group.empty()
+            pygame.mixer.music.load('musics/bgs/forest2.ogg')
+            pygame.mixer.music.play(-1, 0.0)
             player = Player(draw_group)
-            # box = Object(draw_group)
+            player.rect.x = 400
+            player.new_rect_y = 650
+            #box = Object(draw_group)
+            #box.rect.x = 600
 
         def draw_game():
             draw_group.draw(display_game)
-
-
 
         for event in pygame.event.get():
             # condicional para sair do loop
@@ -220,18 +315,23 @@ class GameState():
                 pygame.quit()
                 sys.exit()
 
-            # atualizando os dados na tela
+        # atualizando os dados na tela
         if main.call_started == 1:
             main.call_started = 0
             draw_initial()
 
+        # Effect SCrolling Left
+        if keys.get_pressed()[pygame.K_d] and player.rect.x > 500 and player.rect.x < 1511:
+            main.scroll_speed -= 1
+        elif keys.get_pressed()[pygame.K_a] and player.rect.x > 500 and player.rect.x < 1511:
+            main.scroll_speed += 1
+
+        box.move_speed_box = player.movement_speed
 
         player.update()
         draw_group.update()
         draw_game()
         pygame.display.update()
-
-
 
     def state_manager(self):
         if self.state == 'menu_scene':
@@ -240,6 +340,8 @@ class GameState():
             self.first_cutscene()
         if self.state == 'level_01':
             self.level_01()
+        if self.state == 'level_02':
+            self.level_02()
 
 # Estado do jogo
 game_state = GameState()
@@ -248,15 +350,5 @@ game_state = GameState()
 while running_game:
     game_state.state_manager()
 
-#encerrando os modulos do pygame
+# encerrando os modulos do pygame
 pygame.quit()
-
-
-
-
-
-
-
-
-
-
