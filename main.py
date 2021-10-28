@@ -5,6 +5,7 @@ import main
 import player
 from player import Player
 from object import Object
+from boo import Boo
 from time import sleep
 from scene import Scene
 import sys
@@ -41,7 +42,7 @@ player = Player(draw_group)
 player_rect = player.rect
 # Definindo Box
 box = Object(draw_group)
-box.rect = pygame.Rect(500,600,80,80)
+box_rect = box.rect
 # Definindo os Levels
 scene = Scene()
 
@@ -237,7 +238,6 @@ class GameState():
                 sys.exit()
 
         draw_game()
-        jumping_cutscene()
         # atualizando os dados na tela
         pygame.display.update()
 
@@ -245,7 +245,8 @@ class GameState():
         if self.state == 'level_01':
             display_game.blit(scene.bg_level, [scene.bg_level_pos_x + scroll_speed, scene.bg_level_pos_y])
             # Rects para passagem de mapa
-            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2600 + main.scroll_speed, 550, 68, 147))
+            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_speed, 600, 68, 147))
+            box2 = pygame.draw.rect(display_game, (22,22,22), (900 + main.scroll_speed, 690, 90, 90))
 
             # Definindo BGS
             def draw_initial():
@@ -254,8 +255,6 @@ class GameState():
                 player = Player(draw_group)
                 player.rect.x = 400
                 player.new_rect_y = 650
-                box = Object(draw_group)
-                box.rect.x = 600 + main.scroll_speed
 
             def draw_game():
                 draw_group.draw(display_game)
@@ -271,18 +270,20 @@ class GameState():
                 main.call_started = 0
                 draw_initial()
 
-            if pygame.Rect.colliderect(player.rect, level_01b):
+            if pygame.Rect.colliderect(player_rect, level_01b):
                 level_01b.width = 0
                 level_01b.height = 0
                 main.scroll_speed = 0
                 main.call_started = 1
                 self.state = 'level_02'
 
-            # Effect SCrolling Left
-            if keys.get_pressed()[pygame.K_d] or keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 500 and player.rect.x < 1511:
+
+            # Effect scrolling Left
+            if keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 500 and player.rect.x < 1511:
                 main.scroll_speed -= 1
-            elif keys.get_pressed()[pygame.K_a] or keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 500 and player.rect.x < 1511:
+            elif keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 500 and player.rect.x < 1511:
                 main.scroll_speed += 1
+
 
             player.update()
             draw_group.update()
@@ -325,8 +326,6 @@ class GameState():
             main.scroll_speed -= 1
         elif keys.get_pressed()[pygame.K_a] and player.rect.x > 500 and player.rect.x < 1511:
             main.scroll_speed += 1
-
-        box.move_speed_box = player.movement_speed
 
         player.update()
         draw_group.update()

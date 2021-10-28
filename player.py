@@ -34,6 +34,8 @@ class Player(pygame.sprite.Sprite):
         self.max_sprite_jumping_speed = 1
 
         # State position
+        self.can_move_right = True
+        self.can_move_left = True
         self.can_move = True
         self.moving = False
         self.initial_pos_x = 400
@@ -42,6 +44,7 @@ class Player(pygame.sprite.Sprite):
         self.movement_max_speed = 1
         self.movement_acceleration = 0.9
         # State Jumping
+
         self.gravity = 3
         self.player_on_ground = False
         self.player_jumping = False
@@ -65,11 +68,10 @@ class Player(pygame.sprite.Sprite):
             self.image = pygame.transform.scale(pygame.transform.flip(self.sprites_jumping[self.current_sprite_jumping],
                                                                   self.image_flipped, False), [self.width, self.height])
 
-
     def move_player(self):
         on_pressed_key = pygame.key.get_pressed()
 
-        if on_pressed_key[pygame.K_RIGHT] or on_pressed_key[pygame.K_d]:
+        if on_pressed_key[pygame.K_RIGHT]:
             self.moving = True
             self.image_flipped = False
             self.current_sprite_walking_speed += 0.1
@@ -87,7 +89,7 @@ class Player(pygame.sprite.Sprite):
             if self.movement_speed >= self.movement_max_speed:
                 self.movement_speed = self.movement_max_speed
 
-        elif on_pressed_key[pygame.K_LEFT] or on_pressed_key[pygame.K_a]:
+        elif on_pressed_key[pygame.K_LEFT]:
             self.moving = True
             self.image_flipped = True
             self.current_sprite_walking_speed += 0.1
