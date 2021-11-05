@@ -19,14 +19,17 @@ class Player(pygame.sprite.Sprite):
         self.sprites_jumping.append(pygame.image.load('sprites/entities/player/jumping/luca-jump-Frame 4.png').convert_alpha())
         self.sprites_jumping.append(pygame.image.load('sprites/entities/player/jumping/luca-jump-Frame 5.png').convert_alpha())
         self.sprites_jumping.append(pygame.image.load('sprites/entities/player/jumping/luca-jump-Frame 6.png').convert_alpha())
+
         # Current States
         self.state_animation = 'walking'
+
         # Sprites Walking
         self.current_sprite_walking = 0
         self.current_sprite_walking_speed = 0.0
         self.max_sprite_walking_speed = 1
         self.image = self.sprites_walking[self.current_sprite_walking]
         self.image_flipped = False
+
         # Sprites Jumping
         self.current_sprite_jumping = 0
         self.current_sprite_jump_speed = 0
@@ -43,8 +46,8 @@ class Player(pygame.sprite.Sprite):
         self.movement_speed = 0
         self.movement_max_speed = 1
         self.movement_acceleration = 0.9
-        # State Jumping
 
+        # State Jumping
         self.gravity = 3
         self.player_on_ground = False
         self.player_jumping = False
@@ -52,18 +55,23 @@ class Player(pygame.sprite.Sprite):
         self.jump_peak = 7
         self.jump_acceleration = 0.2
 
+        if self.state_animation == 'walking':
+            self.image = pygame.transform.scale(pygame.transform.flip(self.sprites_walking[self.current_sprite_walking],
+                                                                  self.image_flipped, False), [self.width, self.height])
+
         # Size box collider
-        self.rect = pygame.Rect(self.initial_pos_x, self.initial_pos_y, self.width, self.height)
+        self.rect = pygame.rect.Rect(0,0, 68, 147)
         self.new_rect_y = 0
 
     def update(self, *args):
-        self.move_player()
+        if self.can_move == True:
+            self.move_player()
 
         self.player_jump()
 
         if self.state_animation == 'walking':
             self.image = pygame.transform.scale(pygame.transform.flip(self.sprites_walking[self.current_sprite_walking],
-                                                                  self.image_flipped, False), [self.width, self.height])
+                                                                  self.image_flipped, False), [self.rect.width, self.rect.width])
         if self.state_animation == "jumping":
             self.image = pygame.transform.scale(pygame.transform.flip(self.sprites_jumping[self.current_sprite_jumping],
                                                                   self.image_flipped, False), [self.width, self.height])

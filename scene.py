@@ -11,7 +11,8 @@ class Scene():
         self.bg_minimum_x = 400
         self.bg_maximum_x = 1600
         self.bg_level2 = pygame.image.load('images/bg/level2.png')
-        self.bg_level2 = pygame.transform.scale(self.bg_level2, [1920, 1080])
+        self.bg_level2 = pygame.transform.scale(self.bg_level2, [3840, 1080])
         self.bg_level2_pos_x = 0
         self.bg_level2_pos_y = 0
+        self.bg_level2_ground = 625
 
