@@ -1,5 +1,12 @@
 import pygame
 
+import main
+from object import Object
+from boo import Boo
+from time import sleep
+from scene import Scene
+import sys
+
 class Player(pygame.sprite.Sprite):
     # O que carregar do player quando iniciar:
     def __init__(self, *groups):
@@ -9,10 +16,10 @@ class Player(pygame.sprite.Sprite):
         self.height = 147
         self.sprites_walking = []
         self.sprites_jumping = []
-        self.sprites_walking.append(pygame.image.load('sprites/entities/player/luca-walk0000.png').convert_alpha())
-        self.sprites_walking.append(pygame.image.load('sprites/entities/player/luca-walk0001.png').convert_alpha())
-        self.sprites_walking.append(pygame.image.load('sprites/entities/player/luca-walk0002.png').convert_alpha())
-        self.sprites_walking.append(pygame.image.load('sprites/entities/player/luca-walk0003.png').convert_alpha())
+        self.sprites_walking.append(pygame.image.load('sprites/entities/player/68 147/walking0.png').convert_alpha())
+        self.sprites_walking.append(pygame.image.load('sprites/entities/player/68 147/walking1.png').convert_alpha())
+        self.sprites_walking.append(pygame.image.load('sprites/entities/player/68 147/walking2.png').convert_alpha())
+        self.sprites_walking.append(pygame.image.load('sprites/entities/player/68 147/walking3.png').convert_alpha())
         self.sprites_jumping.append(pygame.image.load('sprites/entities/player/jumping/luca-jump-Frame 1.png').convert_alpha())
         self.sprites_jumping.append(pygame.image.load('sprites/entities/player/jumping/luca-jump-Frame 2.png').convert_alpha())
         self.sprites_jumping.append(pygame.image.load('sprites/entities/player/jumping/luca-jump-Frame 3.png').convert_alpha())
@@ -46,22 +53,27 @@ class Player(pygame.sprite.Sprite):
         self.movement_speed = 0
         self.movement_max_speed = 1
         self.movement_acceleration = 0.9
+        self.blocking_right = False
+        self.blocking_left = False
 
         # State Jumping
         self.gravity = 3
+        self.current_height_ground = 0
         self.player_on_ground = False
         self.player_jumping = False
-        self.jump_force = 2 # Velocidade
-        self.jump_peak = 7
+        self.number_jump = 1
+        self.jump_force = 0 # Velocidade
+        self.jump_peak = 8
         self.jump_acceleration = 0.2
 
         if self.state_animation == 'walking':
-            self.image = pygame.transform.scale(pygame.transform.flip(self.sprites_walking[self.current_sprite_walking],
-                                                                  self.image_flipped, False), [self.width, self.height])
+            self.image = pygame.transform.flip(self.sprites_walking[self.current_sprite_walking],
+                                                                  self.image_flipped, False)
+            self.image.fill((217, 15, 139))
 
         # Size box collider
-        self.rect = pygame.rect.Rect(0,0, 68, 147)
-        self.new_rect_y = 0
+        self.rect = pygame.rect.Rect(self.initial_pos_x, self.initial_pos_y, self.width, self.height)
+        self.current_height_ground = 650
 
     def update(self, *args):
         if self.can_move == True:
@@ -69,17 +81,12 @@ class Player(pygame.sprite.Sprite):
 
         self.player_jump()
 
-        if self.state_animation == 'walking':
-            self.image = pygame.transform.scale(pygame.transform.flip(self.sprites_walking[self.current_sprite_walking],
-                                                                  self.image_flipped, False), [self.rect.width, self.rect.width])
-        if self.state_animation == "jumping":
-            self.image = pygame.transform.scale(pygame.transform.flip(self.sprites_jumping[self.current_sprite_jumping],
-                                                                  self.image_flipped, False), [self.width, self.height])
+
 
     def move_player(self):
         on_pressed_key = pygame.key.get_pressed()
 
-        if on_pressed_key[pygame.K_RIGHT]:
+        if on_pressed_key[pygame.K_RIGHT] and not on_pressed_key[pygame.K_LEFT]:
             self.moving = True
             self.image_flipped = False
             self.current_sprite_walking_speed += 0.1
@@ -97,7 +104,7 @@ class Player(pygame.sprite.Sprite):
             if self.movement_speed >= self.movement_max_speed:
                 self.movement_speed = self.movement_max_speed
 
-        elif on_pressed_key[pygame.K_LEFT]:
+        elif on_pressed_key[pygame.K_LEFT] and not on_pressed_key[pygame.K_RIGHT]:
             self.moving = True
             self.image_flipped = True
             self.current_sprite_walking_speed += 0.1
@@ -119,6 +126,13 @@ class Player(pygame.sprite.Sprite):
             self.moving = False
             self.current_sprite_walking = 0
 
+        if self.state_animation == 'walking':
+            self.image = pygame.transform.flip(self.sprites_walking[self.current_sprite_walking],
+                                                                  self.image_flipped, False)
+        if self.state_animation == "jumping":
+            self.image = pygame.transform.scale(pygame.transform.flip(self.sprites_jumping[self.current_sprite_jumping],
+                                                                  self.image_flipped, False), [self.width, self.height])
+
     def player_jump(self):
         # Mudando a animacao para pulando
         if self.player_jumping:
@@ -127,43 +141,36 @@ class Player(pygame.sprite.Sprite):
             self.state_animation = "walking"
 
         on_pressed_key_space = pygame.key.get_pressed()[pygame.K_SPACE]
-        height_ground = self.new_rect_y
+
 
         # se apertou Espaço e não está pulando e tocando no chão
-        if on_pressed_key_space and not self.player_jumping and self.player_on_ground:
+        if on_pressed_key_space and self.number_jump == 1:
+            self.number_jump = 0
             self.player_jumping = True
 
-        # Se estiver no alto
-        if self.rect.y < height_ground:
-            self.player_on_ground = False
-        else:
-            self.player_on_ground = True
-            self.state_animation = 'walking'
-
-        # Se tiver no alto e não está pulando apenas aplica a gravidade.
-        if not self.player_on_ground and not self.player_jumping:
-            self.current_sprite_jumping = 4
+        # Se não está na altura do chão e não está pulando
+        if not self.rect.y >= self.current_height_ground and not self.player_jumping:
             self.rect.y += self.gravity
 
-        # o Pulo
+        # Se pulando, aplicar a força
         if self.player_jumping:
-            self.jump_force += self.jump_acceleration
-            # Mudando a sprite do pulo com velocidade
-            self.current_sprite_jump_speed += self.current_sprite_jump_acceleration
-            if self.current_sprite_jump_speed >= self.max_sprite_jumping_speed:
-                self.current_sprite_jump_speed = 0
-                self.current_sprite_jumping += 1
-            # Caso a index da sprite seja maior que a quantidade de sprites
-            if self.current_sprite_jumping >= 3:
-                self.current_sprite_jumping = 3
-
-            # Controlando a força do pulo com pico
-            if self.jump_force >= self.jump_peak:
-                self.jump_force = self.jump_peak
-                self.player_jumping = False
-
             self.rect.y -= self.jump_force
+            self.jump_force += self.jump_acceleration
+            if self.jump_force > self.jump_peak and self.player_jumping:
+                self.player_jumping = False
+                self.jump_force = 0
+
+
+        # Se estiver no alto
+        if self.rect.y < self.current_height_ground:
+            self.player_on_ground = False
+        elif self.rect.y >= self.current_height_ground:
+            self.player_on_ground = True
+            self.state_animation = 'walking'
+            self.number_jump = 1
+
+    def update_height_ground(self, current_height_ground):
+        if not self.current_height_ground == 650:
+            self.current_height_ground = current_height_ground
         else:
-            self.jump_force = 0
-
-
+            self.current_height_ground = 650

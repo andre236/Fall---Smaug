@@ -41,6 +41,7 @@ draw_group = pygame.sprite.Group()
 player = Player(draw_group)
 # Definindo Box
 box = Object(draw_group)
+
 # Definindo os Levels
 scene = Scene()
 
@@ -49,9 +50,13 @@ call_started = 1
 scroll_speed = 0
 scroll_max_speed = 10
 scroll_acceleration = 0.9
+force = 0
 
 # Condicao para passar cutscene
 running_initial_cutscene = True
+
+#
+#caixa = pygame.draw.rect(display_game, (22,22,22), (700 + scroll_speed, 700, 80, 80))
 
 
 class GameState():
@@ -244,19 +249,19 @@ class GameState():
             display_game.blit(scene.bg_level, [scene.bg_level_pos_x + scroll_speed, scene.bg_level_pos_y])
             # Rects para passagem de mapa
             level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_speed, 600, 68, 147))
-            box2 = pygame.draw.rect(display_game, (22,22,22), (player.rect))
+            box = pygame.draw.rect(display_game, (22, 22, 22), (700 + main.scroll_speed + main.force, 700, 80, 80))
+            #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
+
 
             # Definindo BGS
             def draw_initial():
                 pygame.mixer.music.load('musics/bgs/forest2.ogg')
                 pygame.mixer.music.play(-1, 0.0)
                 game_state.state = 'level_01'
-                player = Player(draw_group)
-                player.rect.x = 550
-                player.new_rect_y = 650
 
             def draw_game():
                 draw_group.draw(display_game)
+                display_game.blit(player.image, [player.rect.x, player.rect.y])
 
             for event in pygame.event.get():
                 # condicional para sair do loop
@@ -268,6 +273,12 @@ class GameState():
             if main.call_started == 1:
                 main.call_started = 0
                 draw_initial()
+
+            if pygame.Rect.colliderect(player.rect, box):
+                if(player.rect.x < box.x and player.rect.y < 700 and box.x < 2440):
+                    main.force += 3
+                if(player.rect.x > box.x + 40 and player.rect.y < 700 and box.x > 359):
+                    main.force -= 3
 
             if pygame.Rect.colliderect(player.rect, level_01b):
                 level_01b.width = 0
@@ -284,8 +295,13 @@ class GameState():
 
             if keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 913 and player.rect.x < 1551:
                 main.scroll_speed -= 1
+                player.movement_speed = 0
+
             elif keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 913 and player.rect.x < 1551:
                 main.scroll_speed += 1
+                player.movement_speed = 0
+
+            # = pygame.draw.rect(display_game, (22,22,22), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
 
             player.update()
             draw_group.update()
@@ -298,20 +314,20 @@ class GameState():
         if self.state == 'level_02':
             display_game.blit(scene.bg_level2, [scene.bg_level_pos_x + scroll_speed, scene.bg_level_pos_y])
             # Rects para passagem de mapa
+            #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
+            level_03 = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_speed, 600, 68, 147))
 
             # Definindo BGS
             def draw_initial():
                 draw_group.empty()
                 pygame.mixer.music.load('musics/bgs/forest2.ogg')
                 pygame.mixer.music.play(-1, 0.0)
-                player = Player(draw_group)
-                player.rect.x = 400
-                player.new_rect_y = 650
-                #box = Object(draw_group)
-                #box.rect.x = 600
+                game_state.state = 'level_02'
+                player.rect.x = 650
 
             def draw_game():
                 draw_group.draw(display_game)
+                display_game.blit(player.image, [player.rect.x, player.rect.y])
 
             for event in pygame.event.get():
                 # condicional para sair do loop
@@ -324,16 +340,28 @@ class GameState():
                 main.call_started = 0
                 draw_initial()
 
-            # Effect SCrolling Left
-            if keys.get_pressed()[pygame.K_d] and player.rect.x > 500 and player.rect.x < 1511:
+            # Effect scrolling Left
+            if keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 500:
                 main.scroll_speed -= 1
-            elif keys.get_pressed()[pygame.K_a] and player.rect.x > 500 and player.rect.x < 1511:
+            elif keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 500:
                 main.scroll_speed += 1
+
+            if keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 913:
+                main.scroll_speed -= 1
+                player.movement_speed = 0
+
+            elif keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 913 :
+                main.scroll_speed += 1
+                player.movement_speed = 0
+
 
             player.update()
             draw_group.update()
             draw_game()
             pygame.display.update()
+
+        else:
+            pass
 
     def state_manager(self):
         if self.state == 'menu_scene':
