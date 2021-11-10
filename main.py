@@ -41,7 +41,7 @@ draw_group = pygame.sprite.Group()
 player = Player(draw_group)
 # Definindo Box
 box = Object(draw_group)
-
+boo = Boo(draw_group)
 # Definindo os Levels
 scene = Scene()
 
@@ -171,6 +171,9 @@ class GameState():
         pygame.mixer.music.fadeout(1000)
 
         def draw_game():
+            bgm_narration = pygame.mixer.music.load('musics/bgm/narracaomaisbgm.ogg')
+            bgm_narration = pygame.mixer.music.play(1, 0.0)
+
             if keys.get_pressed()[pygame.K_SPACE] or keys.get_pressed()[pygame.K_KP_ENTER] or keys.get_pressed()[pygame.KSCAN_KP_ENTER]:
                 print('fui chamado')
                 main.running_initial_cutscene = False
@@ -222,13 +225,13 @@ class GameState():
                 pygame.Surface.set_alpha(scene_04, alpha_scene_04)
                 display_game.blit(scene_04, [0, 30])
                 pygame.display.update()
-                pygame.time.delay(5)
+                pygame.time.delay(10)
 
             for alpha in range(0, 298):
                 fade_to_black.set_alpha(alpha)
                 display_game.blit(fade_to_black, [0, 0])
                 pygame.display.update()
-                pygame.time.delay(5)
+                pygame.time.delay(10)
                 for alpha in range(299, 300):
                     self.state = 'level_01'
 
@@ -249,7 +252,7 @@ class GameState():
             display_game.blit(scene.bg_level, [scene.bg_level_pos_x + scroll_speed, scene.bg_level_pos_y])
             # Rects para passagem de mapa
             level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_speed, 600, 68, 147))
-            box = pygame.draw.rect(display_game, (22, 22, 22), (700 + main.scroll_speed + main.force, 700, 80, 80))
+            #box = pygame.draw.rect(display_game, (22, 22, 22), (700 + main.scroll_speed + main.force, 700, 80, 80))
             #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
 
 
@@ -262,6 +265,8 @@ class GameState():
             def draw_game():
                 draw_group.draw(display_game)
                 display_game.blit(player.image, [player.rect.x, player.rect.y])
+                #display_game.blit(box.image, [box.rect.x + scroll_speed + force, box.rect.y])
+                display_game.blit(boo.image, [boo.rect.x + scroll_speed, boo.rect.y])
 
             for event in pygame.event.get():
                 # condicional para sair do loop
@@ -274,10 +279,10 @@ class GameState():
                 main.call_started = 0
                 draw_initial()
 
-            if pygame.Rect.colliderect(player.rect, box):
-                if(player.rect.x < box.x and player.rect.y < 700 and box.x < 2440):
+            if pygame.Rect.colliderect(player.rect, box.rect):
+                if(player.rect.x < box.rect.x and player.rect.y < 700 and box.rect.x < 2440):
                     main.force += 3
-                if(player.rect.x > box.x + 40 and player.rect.y < 700 and box.x > 359):
+                if(player.rect.x > box.rect.x + 40 and player.rect.y < 700 and box.rect.x > 359):
                     main.force -= 3
 
             if pygame.Rect.colliderect(player.rect, level_01b):
@@ -303,6 +308,7 @@ class GameState():
 
             # = pygame.draw.rect(display_game, (22,22,22), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
 
+            box.update()
             player.update()
             draw_group.update()
             draw_game()
