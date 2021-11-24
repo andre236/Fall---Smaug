@@ -15,6 +15,49 @@ pygame.init()
 
 # Configurações
 font = pygame.font.SysFont('Montserrat', 48)
+# Primeiro diálogo
+white = (255,255,255)
+dialogue = False
+texts_dialogue_firstscene = []
+current_text_dialogue_firstscene = 0
+texts_dialogue_firstscene.append(font.render("Lucca: Quem é você?", False, white))
+texts_dialogue_firstscene.append(font.render("Boo: Boo... Boo...", False , white))
+texts_dialogue_firstscene.append(font.render("Lucca: Boo ? Que tipo de língua é essa?", False , white))
+texts_dialogue_firstscene.append(font.render("Boo: Boo.", False , white))
+texts_dialogue_firstscene.append(font.render("Lucca: Ok, então vou te chamar de Boo.", False , white))
+# Dialogo do level 2
+texts_dialogue_butterflyscene = []
+current_text_dialogue_butterflyscene = 0
+texts_dialogue_butterflyscene.append(font.render("* Quer reviver alguém? Procure-me! Trickster * ", False, white))
+texts_dialogue_butterflyscene.append(font.render("Lucca: Preciso achar esse Trickster logo!", False, white))
+texts_dialogue_butterflyscene.append(font.render("Boo: Se eu fosse você, não acreditaria nesse tal de Trickster.", False, white))
+texts_dialogue_butterflyscene.append(font.render("Lucca: Ah mas o papel diz... pera ai, VOCÊ FALA???", False, white))
+texts_dialogue_butterflyscene.append(font.render("Boo: Claro que eu falo, poxa", False, white))
+texts_dialogue_butterflyscene.append(font.render("Lucca: Então porque estava repetindo Boo, Boo?", False, white))
+texts_dialogue_butterflyscene.append(font.render("Boo: Achei que você era um Oblis pregando alguma peça em mim.", False, white))
+texts_dialogue_butterflyscene.append(font.render("Lucca: Oblis? O que são Oblis?", False, white))
+texts_dialogue_butterflyscene.append(font.render("Boo: Ora hmmm, é complicado explicar, são coisas ruins e brincalhonas.", False, white))
+texts_dialogue_butterflyscene.append(font.render("Lucca: E o que é você?", False, white))
+texts_dialogue_butterflyscene.append(font.render("Boo: Eu sou Boo.", False, white))
+texts_dialogue_butterflyscene.append(font.render("Lucca: Não, não. O que é você, não QUEM é você", False, white))
+texts_dialogue_butterflyscene.append(font.render("Boo: Hmmmm, eu sou muitas coisas, mas você pode me chamar de Boo.", False, white))
+texts_dialogue_butterflyscene.append(font.render("Lucca: Ahhh, ok. Ta mas porque você ta me seguindo?", False, white))
+texts_dialogue_butterflyscene.append(font.render("Boo: Eu não sei, só estou te seguindo.", False, white))
+texts_dialogue_butterflyscene.append(font.render("Lucca: Ah tanto faz então, vou seguir no meu objetivo, ta bom?", False, white))
+# Dialogo level 3
+texts_dialogue_level3 = []
+current_text_dialogue_level3 = 0
+texts_dialogue_level3.append(font.render("Boo: Qual seu nome? Estamos andando tanto tempo", False, white))
+texts_dialogue_level3.append(font.render("Boo: E não perguntei seu nome.", False, white))
+texts_dialogue_level3.append(font.render("Lucca: É Lucca.", False, white))
+texts_dialogue_level3.append(font.render("Boo: Lucca... Não deve acreditar nessa carta desse jeito...", False, white))
+texts_dialogue_level3.append(font.render("Lucca: Você não entende, Boo. Eu sinto que vai dar certo!", False, white))
+texts_dialogue_level3.append(font.render("Lucca: Vou trazer minha mãe devolta e todo mundo vai me agradecer.", False, white))
+texts_dialogue_level3.append(font.render("Lucca: Nós vamos poder voltar para casa e esquecer isso tudo...", False, white))
+texts_dialogue_level3.append(font.render("Boo: Lucca...", False, white))
+texts_dialogue_level3.append(font.render("Lucca: Mesmo você não me ajudando, eu deixo você vir com a gente.", False, white))
+texts_dialogue_level3.append(font.render("Boo: ...", False, white))
+
 running_game = True
 clock = pygame.time.Clock()
 
@@ -41,23 +84,39 @@ draw_group = pygame.sprite.Group()
 player = Player(draw_group)
 # Definindo Box
 box = Object(draw_group)
+# Definindo Boo
 boo = Boo(draw_group)
+# Carta
+butterfly = Object(draw_group)
+butterfly.image = pygame.image.load('sprites/entities/butterfly/butterfly_frame_1.png')
+butterfly.width = 20
+butterfly.height = 20
+butterfly_alive = True
+# Portal
+portal = Object(draw_group)
+portal.image = pygame.image.load('sprites/objects/portal.png')
+portal.width = 68
+portal.height = 147
+
 # Definindo os Levels
 scene = Scene()
 
 # Variables Global
 call_started = 1
-scroll_speed = 0
+scroll_display_x = 0
+scroll_display_y = 0
+scroll_speed_y = 2
+scroll_speed_x = 2
+blocking_player_right = False
+blocking_player_left = False
+cutscene_onlevel = False
 scroll_max_speed = 10
 scroll_acceleration = 0.9
-force = 0
+force_box = 0
+boo_distance_x = 1300
 
 # Condicao para passar cutscene
 running_initial_cutscene = True
-
-#
-#caixa = pygame.draw.rect(display_game, (22,22,22), (700 + scroll_speed, 700, 80, 80))
-
 
 class GameState():
     main.call_started
@@ -111,6 +170,31 @@ class GameState():
                     draw_group.empty()
                     pygame.mixer.music.fadeout(1000)
                     self.state = 'level_01'
+
+                if pygame.mouse.get_pressed(3)[0] == 1 and keys.get_pressed()[pygame.K_2]:
+                    draw_group.empty()
+                    pygame.mixer.music.fadeout(1000)
+                    self.state = 'level_02'
+
+                if pygame.mouse.get_pressed(3)[0] == 1 and keys.get_pressed()[pygame.K_3]:
+                    draw_group.empty()
+                    pygame.mixer.music.fadeout(1000)
+                    self.state = 'level_03'
+
+                if pygame.mouse.get_pressed(3)[0] == 1 and keys.get_pressed()[pygame.K_4]:
+                    draw_group.empty()
+                    pygame.mixer.music.fadeout(1000)
+                    self.state = 'level_04'
+
+                if pygame.mouse.get_pressed(3)[0] == 1 and keys.get_pressed()[pygame.K_5]:
+                    draw_group.empty()
+                    pygame.mixer.music.fadeout(1000)
+                    self.state = 'level_05'
+
+                if pygame.mouse.get_pressed(3)[0] == 1 and keys.get_pressed()[pygame.K_6]:
+                    draw_group.empty()
+                    pygame.mixer.music.fadeout(1000)
+                    self.state = 'level_06'
 
             if options_button.rect.collidepoint(mouse_position):
                 if pygame.mouse.get_pressed(3)[0] == 1:
@@ -249,91 +333,36 @@ class GameState():
 
     def level_01(self):
         if self.state == 'level_01':
-            display_game.blit(scene.bg_level, [scene.bg_level_pos_x + scroll_speed, scene.bg_level_pos_y])
+            display_game.blit(scene.bg_level, [scene.bg_level_pos_x + main.scroll_display_x, scene.bg_level_pos_y + main.scroll_display_y])
             # Rects para passagem de mapa
-            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_speed, 600, 68, 147))
-            #box = pygame.draw.rect(display_game, (22, 22, 22), (700 + main.scroll_speed + main.force, 700, 80, 80))
+            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_display_x, 600 + main.scroll_display_y, 68, 147))
             #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
-
 
             # Definindo BGS
             def draw_initial():
                 pygame.mixer.music.load('musics/bgs/forest2.ogg')
                 pygame.mixer.music.play(-1, 0.0)
                 game_state.state = 'level_01'
+                player.rect.x = 925
 
             def draw_game():
                 draw_group.draw(display_game)
                 display_game.blit(player.image, [player.rect.x, player.rect.y])
-                #display_game.blit(box.image, [box.rect.x + scroll_speed + force, box.rect.y])
-                display_game.blit(boo.image, [boo.rect.x + scroll_speed, boo.rect.y])
-
-            for event in pygame.event.get():
-                # condicional para sair do loop
-                if event.type == pygame.QUIT or keys.get_pressed()[pygame.K_ESCAPE]:
-                    pygame.quit()
-                    sys.exit()
-
-                # atualizando os dados na tela
-            if main.call_started == 1:
-                main.call_started = 0
-                draw_initial()
-
-            if pygame.Rect.colliderect(player.rect, box.rect):
-                if(player.rect.x < box.rect.x and player.rect.y < 700 and box.rect.x < 2440):
-                    main.force += 3
-                if(player.rect.x > box.rect.x + 40 and player.rect.y < 700 and box.rect.x > 359):
-                    main.force -= 3
-
-            if pygame.Rect.colliderect(player.rect, level_01b):
-                level_01b.width = 0
-                level_01b.height = 0
-                main.scroll_speed = 0
-                main.call_started = 1
-                game_state.state = 'level_02'
-
-            # Effect scrolling Left
-            if keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 500 and player.rect.x < 912:
-                main.scroll_speed -= 1
-            elif keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 500 and player.rect.x < 912:
-                main.scroll_speed += 1
-
-            if keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 913 and player.rect.x < 1551:
-                main.scroll_speed -= 1
-                player.movement_speed = 0
-
-            elif keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 913 and player.rect.x < 1551:
-                main.scroll_speed += 1
-                player.movement_speed = 0
-
-            # = pygame.draw.rect(display_game, (22,22,22), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
-
-            box.update()
-            player.update()
-            draw_group.update()
-            draw_game()
-            pygame.display.update()
-        else:
-            pass
-
-    def level_02(self):
-        if self.state == 'level_02':
-            display_game.blit(scene.bg_level2, [scene.bg_level_pos_x + scroll_speed, scene.bg_level_pos_y])
-            # Rects para passagem de mapa
-            #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
-            level_03 = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_speed, 600, 68, 147))
-
-            # Definindo BGS
-            def draw_initial():
-                draw_group.empty()
-                pygame.mixer.music.load('musics/bgs/forest2.ogg')
-                pygame.mixer.music.play(-1, 0.0)
-                game_state.state = 'level_02'
-                player.rect.x = 650
-
-            def draw_game():
-                draw_group.draw(display_game)
-                display_game.blit(player.image, [player.rect.x, player.rect.y])
+                display_game.blit(boo.image, [player.rect.x + main.boo_distance_x, player.rect.y - 15])
+                if main.boo_distance_x > 30:
+                    main.cutscene_onlevel = True
+                    main.boo_distance_x -= 2
+                else:
+                    #
+                    if main.cutscene_onlevel:
+                        display_game.blit(main.texts_dialogue_firstscene[main.current_text_dialogue_firstscene], [960 - (main.texts_dialogue_firstscene[main.current_text_dialogue_firstscene].get_rect().width / 2), 900])
+                    # Passar diálogo
+                    if keys.get_pressed()[pygame.K_z] and main.cutscene_onlevel and main.current_text_dialogue_firstscene< len(main.texts_dialogue_firstscene):
+                        pygame.time.delay(1000)
+                        main.current_text_dialogue_firstscene += 1
+                        if main.current_text_dialogue_firstscene >= len(main.texts_dialogue_firstscene):
+                            main.current_text_dialogue_firstscene = len(main.texts_dialogue_firstscene) - 1
+                            main.cutscene_onlevel = False
 
             for event in pygame.event.get():
                 # condicional para sair do loop
@@ -346,26 +375,396 @@ class GameState():
                 main.call_started = 0
                 draw_initial()
 
+            if pygame.Rect.colliderect(player.rect, level_01b):
+                level_01b.width = 0
+                level_01b.height = 0
+                main.scroll_display_x = 0
+                main.call_started = 1
+                game_state.state = 'level_02'
+
+            if main.scroll_display_x > 165:
+                main.blocking_player_left = True
+            else:
+                main.blocking_player_left = False
+
+            if main.scroll_display_x < -2086:
+                main.blocking_player_right = True
+            else:
+                main.blocking_player_right = False
+
             # Effect scrolling Left
-            if keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 500:
-                main.scroll_speed -= 1
-            elif keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 500:
-                main.scroll_speed += 1
-
-            if keys.get_pressed()[pygame.K_RIGHT] and player.rect.x > 913:
-                main.scroll_speed -= 1
-                player.movement_speed = 0
-
-            elif keys.get_pressed()[pygame.K_LEFT] and player.rect.x > 913 :
-                main.scroll_speed += 1
-                player.movement_speed = 0
+            if keys.get_pressed()[pygame.K_RIGHT] and not main.blocking_player_right and not main.cutscene_onlevel:
+                main.scroll_display_x -= main.scroll_speed_x
+            elif keys.get_pressed()[pygame.K_LEFT] and not main.blocking_player_left and not main.cutscene_onlevel:
+                main.scroll_display_x += main.scroll_speed_x
 
 
+            boo.update()
+            player.update()
+            draw_group.update()
+            draw_game()
+            pygame.display.update()
+        else:
+            pass
+
+    def level_02(self):
+        if self.state == 'level_02':
+            display_game.blit(scene.bg_level2, [scene.bg_level2_pos_x + main.scroll_display_x, scene.bg_level2_pos_y])
+            # Rects para passagem de mapa
+            #hitbox_player = pygame.draw.rect(display_game, (123,123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
+            hitbox_box = pygame.draw.rect(display_game, (123, 123,123), (box.rect.x + main.scroll_display_x + main.force_box, box.rect.y, box.rect.width, box.rect.height))
+            portal_level_03 = pygame.draw.rect(display_game, (0, 0, 0), (2620 + main.scroll_display_x, 265, 34, 77))
+            plataform = pygame.draw.rect(display_game, (0 , 0, 0), ( 1600 + main.scroll_display_x, 520, 147, 80))
+            plataform2 = pygame.draw.rect(display_game, (0 , 0, 0), ( 2000 + main.scroll_display_x, 450, 147, 80))
+            plataform3 = pygame.draw.rect(display_game, (0 , 0, 0), ( 2400 + main.scroll_display_x, 380, 147, 80))
+
+
+            # Definindo BGS
+            def draw_initial():
+                draw_group.empty()
+                pygame.mixer.music.load('musics/bgs/forest2.ogg')
+                pygame.mixer.music.play(-1, 0.0)
+                player.rect.x = 925
+                box.rect.x = 1200
+                box.rect.y = 700
+                butterfly.rect.x = 2430
+                butterfly.rect.y = 340
+                portal.rect.x = 2600
+                portal.rect.y = 250
+                player.current_height_ground = 625
+
+            def draw_game():
+                draw_group.draw(display_game)
+                display_game.blit(player.image, [player.rect.x, player.rect.y])
+                display_game.blit(box.image, [box.rect.x + main.scroll_display_x + main.force_box, box.rect.y])
+                display_game.blit(portal.image, [portal.rect.x + main.scroll_display_x, portal.rect.y])
+                if main.butterfly_alive:
+                    display_game.blit(butterfly.image, [butterfly.rect.x + main.scroll_display_x, butterfly.rect.y])
+                if not player.image_flipped:
+                    display_game.blit(boo.image, [player.rect.x - 25, player.rect.y])
+                else:
+                    display_game.blit(boo.image, [player.rect.x + 20, player.rect.y])
+
+            if pygame.Rect.colliderect(player.rect, portal_level_03):
+                main.scroll_display_x = 0
+                main.call_started = 1
+                game_state.state = 'level_03'
+
+            if main.cutscene_onlevel and not main.butterfly_alive:
+                display_game.blit(main.texts_dialogue_butterflyscene[main.current_text_dialogue_butterflyscene], [960 - (main.texts_dialogue_butterflyscene[main.current_text_dialogue_butterflyscene].get_rect().width / 2), 900])
+                    # Passar diálogo
+                if keys.get_pressed()[pygame.K_z] and main.cutscene_onlevel and main.current_text_dialogue_butterflyscene < len(main.texts_dialogue_butterflyscene):
+                    pygame.time.delay(1000)
+                    main.current_text_dialogue_butterflyscene += 1
+                    if main.current_text_dialogue_butterflyscene >= len(main.texts_dialogue_butterflyscene):
+                        main.current_text_dialogue_butterflyscene = len(main.texts_dialogue_butterflyscene) - 1
+                        main.cutscene_onlevel = False
+
+            # empurrando a Caixa
+            if pygame.Rect.colliderect(player.rect, hitbox_box):
+                if player.rect.x > hitbox_box.x:
+                    main.force_box -= 2
+                if player.rect.x < hitbox_box.x + (hitbox_box.w/2):
+                    main.force_box += 2
+
+
+
+            # Poder ficar em cima da caixa
+            if  player.rect.x > (hitbox_box.x - 70) and player.rect.x < (hitbox_box.x + 70):
+                player.current_height_ground = box.rect.y - 150
+            else:
+                player.current_height_ground = 650
+
+            # Se o rect X dp player está entre o x da plataforma
+            if player.rect.x >= (plataform.x - (plataform.width/2)) and player.rect.x < plataform.x + plataform.width + 10 and (player.rect.y + player.rect.height) < plataform.y:
+                player.current_height_ground = plataform.y - 150
+
+            if player.rect.x >= (plataform2.x - (plataform2.width/2)) and player.rect.x < plataform2.x + plataform2.width + 10 and (player.rect.y + player.rect.height) < plataform2.y:
+                player.current_height_ground = plataform2.y - 150
+
+            if player.rect.x >= (plataform3.x - (plataform3.width/2)) and player.rect.x < plataform3.x + plataform3.width + 10 and (player.rect.y + player.rect.height) < plataform3.y:
+                player.current_height_ground = plataform3.y - 150
+                if main.butterfly_alive:
+                    main.butterfly_alive = False
+                    main.cutscene_onlevel = True
+
+            for event in pygame.event.get():
+                # condicional para sair do loop
+                if event.type == pygame.QUIT or keys.get_pressed()[pygame.K_ESCAPE]:
+                    pygame.quit()
+                    sys.exit()
+
+            # Atualizando os dados na tela
+            if main.call_started == 1:
+                main.call_started = 0
+                draw_initial()
+
+            # Effect scrolling Left
+            if keys.get_pressed()[pygame.K_RIGHT] and not main.blocking_player_right and not main.cutscene_onlevel:
+                main.scroll_display_x -= main.scroll_speed_x
+            elif keys.get_pressed()[pygame.K_LEFT] and not main.blocking_player_left and not main.cutscene_onlevel:
+                main.scroll_display_x += main.scroll_speed_x
+
+
+            # Limitando o espaço do level
+            if main.scroll_display_x > 165:
+                main.blocking_player_left = True
+            else:
+                main.blocking_player_left = False
+
+            if main.scroll_display_x < -2686:
+                main.blocking_player_right = True
+            else:
+                main.blocking_player_right = False
+
+
+            box.update()
+            boo.update()
+            portal.update()
+            butterfly.update()
             player.update()
             draw_group.update()
             draw_game()
             pygame.display.update()
 
+        else:
+            pass
+
+    def level_03(self):
+        if self.state == 'level_03':
+            display_game.blit(scene.bg_level3, [scene.bg_level3_pos_x + main.scroll_display_x, scene.bg_level3_pos_y])
+            # Rects para passagem de mapa
+            #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
+
+            # Definindo BGS
+            def draw_initial():
+                pygame.mixer.music.load('musics/bgs/forest2.ogg')
+                pygame.mixer.music.play(-1, 0.0)
+                player.rect.x = 925
+                box.rect.x = 1200
+                box.rect.y = 700
+
+            def draw_game():
+                draw_group.draw(display_game)
+                display_game.blit(player.image, [player.rect.x, player.rect.y])
+                if not player.image_flipped:
+                    display_game.blit(boo.image, [player.rect.x - 25, player.rect.y])
+                else:
+                    display_game.blit(boo.image, [player.rect.x + 20, player.rect.y])
+
+
+            for event in pygame.event.get():
+                # condicional para sair do loop
+                if event.type == pygame.QUIT or keys.get_pressed()[pygame.K_ESCAPE]:
+                    pygame.quit()
+                    sys.exit()
+
+                # atualizando os dados na tela
+            if main.call_started == 1:
+                main.call_started = 0
+                draw_initial()
+
+            if main.scroll_display_x > 165:
+                main.blocking_player_left = True
+            else:
+                main.blocking_player_left = False
+
+            if main.scroll_display_x < -2086:
+                main.blocking_player_right = True
+            else:
+                main.blocking_player_right = False
+
+            # Effect scrolling Left
+            if keys.get_pressed()[pygame.K_RIGHT] and not main.blocking_player_right and not main.cutscene_onlevel:
+                main.scroll_display_x -= main.scroll_speed_x
+            elif keys.get_pressed()[pygame.K_LEFT] and not main.blocking_player_left and not main.cutscene_onlevel:
+                main.scroll_display_x += main.scroll_speed_x
+
+            boo.update()
+            butterfly.update()
+            player.update()
+            draw_group.update()
+            draw_game()
+            pygame.display.update()
+        else:
+            pass
+
+    def level_04(self):
+        if self.state == 'level_04':
+            display_game.blit(scene.bg_level4, [scene.bg_level4_pos_x + main.scroll_display_x, scene.bg_level4_pos_y])
+            # Rects para passagem de mapa
+            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_display_x, 600, 68, 147))
+            #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
+
+            # Definindo BGS
+            def draw_initial():
+                pygame.mixer.music.load('musics/bgs/forest2.ogg')
+                pygame.mixer.music.play(-1, 0.0)
+                player.rect.x = 925
+
+            def draw_game():
+                draw_group.draw(display_game)
+                display_game.blit(player.image, [player.rect.x, player.rect.y])
+                display_game.blit(boo.image, [player.rect.x + main.boo_distance_x, player.rect.y - 15])
+
+
+            for event in pygame.event.get():
+                # condicional para sair do loop
+                if event.type == pygame.QUIT or keys.get_pressed()[pygame.K_ESCAPE]:
+                    pygame.quit()
+                    sys.exit()
+
+                # atualizando os dados na tela
+            if main.call_started == 1:
+                main.call_started = 0
+                draw_initial()
+
+            if pygame.Rect.colliderect(player.rect, level_01b):
+                level_01b.width = 0
+                level_01b.height = 0
+                main.scroll_display_x = 0
+                main.call_started = 1
+                game_state.state = 'level_05'
+
+            if main.scroll_display_x > 165:
+                main.blocking_player_left = True
+            else:
+                main.blocking_player_left = False
+
+            if main.scroll_display_x < -2086:
+                main.blocking_player_right = True
+            else:
+                main.blocking_player_right = False
+
+            # Effect scrolling Left
+            if keys.get_pressed()[pygame.K_RIGHT] and not main.blocking_player_right and not main.cutscene_onlevel:
+                main.scroll_display_x -= main.scroll_speed_x
+            elif keys.get_pressed()[pygame.K_LEFT] and not main.blocking_player_left and not main.cutscene_onlevel:
+                main.scroll_display_x += main.scroll_speed_x
+
+
+            boo.update()
+            player.update()
+            draw_group.update()
+            draw_game()
+            pygame.display.update()
+        else:
+            pass
+
+    def level_05(self):
+        if self.state == 'level_05':
+            display_game.blit(scene.bg_level5, [scene.bg_level5_pos_x + main.scroll_display_x, scene.bg_level5_pos_y])
+            # Rects para passagem de mapa
+            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_display_x, 600, 68, 147))
+            #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
+
+            # Definindo BGS
+            def draw_initial():
+                pygame.mixer.music.load('musics/bgs/forest2.ogg')
+                pygame.mixer.music.play(-1, 0.0)
+                player.rect.x = 925
+
+            def draw_game():
+                draw_group.draw(display_game)
+                display_game.blit(player.image, [player.rect.x, player.rect.y])
+                display_game.blit(boo.image, [player.rect.x + main.boo_distance_x, player.rect.y - 15])
+
+
+            for event in pygame.event.get():
+                # condicional para sair do loop
+                if event.type == pygame.QUIT or keys.get_pressed()[pygame.K_ESCAPE]:
+                    pygame.quit()
+                    sys.exit()
+
+                # atualizando os dados na tela
+            if main.call_started == 1:
+                main.call_started = 0
+                draw_initial()
+
+            if pygame.Rect.colliderect(player.rect, level_01b):
+                level_01b.width = 0
+                level_01b.height = 0
+                main.scroll_display_x = 0
+                main.call_started = 1
+                game_state.state = 'level_05'
+
+            if main.scroll_display_x > 165:
+                main.blocking_player_left = True
+            else:
+                main.blocking_player_left = False
+
+            if main.scroll_display_x < -2086:
+                main.blocking_player_right = True
+            else:
+                main.blocking_player_right = False
+
+            # Effect scrolling Left
+            if keys.get_pressed()[pygame.K_RIGHT] and not main.blocking_player_right and not main.cutscene_onlevel:
+                main.scroll_display_x -= main.scroll_speed_x
+            elif keys.get_pressed()[pygame.K_LEFT] and not main.blocking_player_left and not main.cutscene_onlevel:
+                main.scroll_display_x += main.scroll_speed_x
+
+
+            boo.update()
+            player.update()
+            draw_group.update()
+            draw_game()
+            pygame.display.update()
+        else:
+            pass
+
+    def level_06(self):
+        if self.state == 'level_06':
+            display_game.blit(scene.bg_level6, [scene.bg_level6_pos_x + main.scroll_display_x, scene.bg_level6_pos_y])
+            # Rects para passagem de mapa
+            #level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_display_x, 600, 68, 147))
+            #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
+
+            # Definindo BGS
+            def draw_initial():
+                pygame.mixer.music.load('musics/bgs/forest2.ogg')
+                pygame.mixer.music.play(-1, 0.0)
+                player.rect.x = 925
+
+            def draw_game():
+                draw_group.draw(display_game)
+                display_game.blit(player.image, [player.rect.x, player.rect.y])
+                display_game.blit(boo.image, [player.rect.x + main.boo_distance_x, player.rect.y - 15])
+
+
+            for event in pygame.event.get():
+                # condicional para sair do loop
+                if event.type == pygame.QUIT or keys.get_pressed()[pygame.K_ESCAPE]:
+                    pygame.quit()
+                    sys.exit()
+
+                # atualizando os dados na tela
+            if main.call_started == 1:
+                main.call_started = 0
+                draw_initial()
+
+            if main.scroll_display_x > 165:
+                main.blocking_player_left = True
+            else:
+                main.blocking_player_left = False
+
+            if main.scroll_display_x < -2086:
+                main.blocking_player_right = True
+            else:
+                main.blocking_player_right = False
+
+            # Effect scrolling Left
+            if keys.get_pressed()[pygame.K_RIGHT] and not main.blocking_player_right and not main.cutscene_onlevel:
+                main.scroll_display_x -= main.scroll_speed_x
+            elif keys.get_pressed()[pygame.K_LEFT] and not main.blocking_player_left and not main.cutscene_onlevel:
+                main.scroll_display_x += main.scroll_speed_x
+
+
+            boo.update()
+            player.update()
+            draw_group.update()
+            draw_game()
+            pygame.display.update()
         else:
             pass
 
@@ -378,6 +777,15 @@ class GameState():
             self.level_01()
         if self.state == 'level_02':
             self.level_02()
+        if self.state == 'level_03':
+            self.level_03()
+        if self.state == 'level_04':
+            self.level_04()
+        if self.state == 'level_05':
+            self.level_05()
+        if self.state == 'level_06':
+            self.level_06()
+
 
 # Estado do jogo
 game_state = GameState()

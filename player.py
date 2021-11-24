@@ -63,8 +63,8 @@ class Player(pygame.sprite.Sprite):
         self.player_jumping = False
         self.number_jump = 1
         self.jump_force = 0 # Velocidade
-        self.jump_peak = 8
-        self.jump_acceleration = 0.2
+        self.jump_peak = 6
+        self.jump_acceleration = 0.1
 
         if self.state_animation == 'walking':
             self.image = pygame.transform.flip(self.sprites_walking[self.current_sprite_walking],
@@ -98,11 +98,11 @@ class Player(pygame.sprite.Sprite):
             if self.current_sprite_walking >= len(self.sprites_walking):
                 self.current_sprite_walking = 0
 
-            self.rect.x += self.movement_speed
-            self.movement_speed += self.movement_acceleration
+            #self.rect.x += self.movement_speed
+            #self.movement_speed += self.movement_acceleration
 
-            if self.movement_speed >= self.movement_max_speed:
-                self.movement_speed = self.movement_max_speed
+            #if self.movement_speed >= self.movement_max_speed:
+            #    self.movement_speed = self.movement_max_speed
 
         elif on_pressed_key[pygame.K_LEFT] and not on_pressed_key[pygame.K_RIGHT]:
             self.moving = True
@@ -115,11 +115,11 @@ class Player(pygame.sprite.Sprite):
             if self.current_sprite_walking >= len(self.sprites_walking):
                 self.current_sprite_walking = 0
 
-            self.rect.x -= self.movement_speed
-            self.movement_speed += self.movement_acceleration
+            #self.rect.x -= self.movement_speed
+            #self.movement_speed += self.movement_acceleration
 
-            if self.movement_speed >= self.movement_max_speed:
-                self.movement_speed = self.movement_max_speed
+            #if self.movement_speed >= self.movement_max_speed:
+            #    self.movement_speed = self.movement_max_speed
 
         else:
             self.movement_speed = 0
@@ -150,12 +150,16 @@ class Player(pygame.sprite.Sprite):
 
         # Se não está na altura do chão e não está pulando
         if not self.rect.y >= self.current_height_ground and not self.player_jumping:
+            self.state_animation = "jumping"
             self.rect.y += self.gravity
+            self.current_sprite_jumping = 4
+
 
         # Se pulando, aplicar a força
         if self.player_jumping:
             self.rect.y -= self.jump_force
             self.jump_force += self.jump_acceleration
+            self.current_sprite_jumping = 2
             if self.jump_force > self.jump_peak and self.player_jumping:
                 self.player_jumping = False
                 self.jump_force = 0
@@ -165,6 +169,7 @@ class Player(pygame.sprite.Sprite):
         if self.rect.y < self.current_height_ground:
             self.player_on_ground = False
         elif self.rect.y >= self.current_height_ground:
+            self.current_sprite_jumping = 5
             self.player_on_ground = True
             self.state_animation = 'walking'
             self.number_jump = 1
