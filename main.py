@@ -18,6 +18,10 @@ font = pygame.font.SysFont('Montserrat', 48)
 # Primeiro diálogo
 white = (255,255,255)
 dialogue = False
+text_number_one = font.render("1", False, white)
+text_number_two = font.render("2", False, white)
+text_number_three = font.render("3", False, white)
+
 texts_dialogue_firstscene = []
 current_text_dialogue_firstscene = 0
 texts_dialogue_firstscene.append(font.render("Lucca: Quem é você?", False, white))
@@ -45,6 +49,7 @@ texts_dialogue_butterflyscene.append(font.render("Lucca: Ahhh, ok. Ta mas porque
 texts_dialogue_butterflyscene.append(font.render("Boo: Eu não sei, só estou te seguindo.", False, white))
 texts_dialogue_butterflyscene.append(font.render("Lucca: Ah tanto faz então, vou seguir no meu objetivo, ta bom?", False, white))
 # Dialogo level 3
+dialogue_onlevel3 = False
 texts_dialogue_level3 = []
 current_text_dialogue_level3 = 0
 texts_dialogue_level3.append(font.render("Boo: Qual seu nome? Estamos andando tanto tempo", False, white))
@@ -84,6 +89,34 @@ draw_group = pygame.sprite.Group()
 player = Player(draw_group)
 # Definindo Box
 box = Object(draw_group)
+# Definindo as boxs do puzzle
+box_time = Object(draw_group)
+box_time.image = pygame.image.load('sprites/objects/box_time.png')
+box_time.width = 80
+box_time.height = 80
+time_symbol = Object(draw_group)
+time_symbol.image = pygame.image.load('sprites/objects/time_symbol.png')
+time_symbol.width = 40
+time_symbol.height = 40
+box_love = Object(draw_group)
+box_love.image = pygame.image.load('sprites/objects/box_love.png')
+box_love.width = 80
+box_love.height = 80
+love_symbol = Object(draw_group)
+love_symbol.image = pygame.image.load('sprites/objects/love_symbol.png')
+love_symbol.width = 40
+love_symbol.height = 40
+box_death = Object(draw_group)
+box_death.image = pygame.image.load('sprites/objects/box_death.png')
+box_death.width = 80
+box_death.height = 80
+death_symbol = Object(draw_group)
+death_symbol.image = pygame.image.load('sprites/objects/death_symbol.png')
+death_symbol.width = 40
+death_symbol.height = 40
+
+box_death_love_time_solved = False
+
 # Definindo Boo
 boo = Boo(draw_group)
 # Carta
@@ -113,6 +146,9 @@ cutscene_onlevel = False
 scroll_max_speed = 10
 scroll_acceleration = 0.9
 force_box = 0
+force_box_time = 0
+force_box_death = 0
+force_box_love = 0
 boo_distance_x = 1300
 
 # Condicao para passar cutscene
@@ -543,6 +579,7 @@ class GameState():
                 player.rect.x = 925
                 box.rect.x = 1200
                 box.rect.y = 700
+                main.dialogue_onlevel3 = True
 
             def draw_game():
                 draw_group.draw(display_game)
@@ -551,6 +588,17 @@ class GameState():
                     display_game.blit(boo.image, [player.rect.x - 25, player.rect.y])
                 else:
                     display_game.blit(boo.image, [player.rect.x + 20, player.rect.y])
+
+                if dialogue_onlevel3:
+                    display_game.blit(main.texts_dialogue_level3[main.current_text_dialogue_level3], [960 - (main.texts_dialogue_level3[main.current_text_dialogue_level3].get_rect().width / 2), 900])
+                    # Passar diálogo
+                if keys.get_pressed()[pygame.K_z] and main.dialogue_onlevel3 and main.current_text_dialogue_level3 < len(main.texts_dialogue_level3):
+                    pygame.time.delay(1000)
+                    main.current_text_dialogue_level3 += 1
+                    if main.current_text_dialogue_level3 >= len(main.texts_dialogue_level3):
+                        main.current_text_dialogue_level3 = len(main.texts_dialogue_level3) - 1
+                        main.dialogue_onlevel3 = False
+
 
 
             for event in pygame.event.get():
@@ -569,7 +617,7 @@ class GameState():
             else:
                 main.blocking_player_left = False
 
-            if main.scroll_display_x < -2086:
+            if main.scroll_display_x < -4000:
                 main.blocking_player_right = True
             else:
                 main.blocking_player_right = False
@@ -593,7 +641,11 @@ class GameState():
         if self.state == 'level_04':
             display_game.blit(scene.bg_level4, [scene.bg_level4_pos_x + main.scroll_display_x, scene.bg_level4_pos_y])
             # Rects para passagem de mapa
-            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_display_x, 600, 68, 147))
+            #level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2600 + main.scroll_display_x, 600, 68, 147))
+            hitbox_box_time = pygame.draw.rect(display_game, (123, 123,123), (box_time.rect.x + main.scroll_display_x + main.force_box_time, box_time.rect.y, box_time.rect.width, box_time.rect.height))
+            hitbox_box_love = pygame.draw.rect(display_game, (123, 123,123),(box_love.rect.x + main.scroll_display_x + main.force_box_love, box_love.rect.y, box_love.rect.width, box_love.rect.height))
+            hitbox_box_death  = pygame.draw.rect(display_game, (123,123,123), (box_death.rect.x + main.scroll_display_x + main.force_box_death, box_death.rect.y, box_death.width, box_death.rect.height))
+
             #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
 
             # Definindo BGS
@@ -601,11 +653,36 @@ class GameState():
                 pygame.mixer.music.load('musics/bgs/forest2.ogg')
                 pygame.mixer.music.play(-1, 0.0)
                 player.rect.x = 925
+                box_death.rect.x = 1500
+                box_death.rect.y = 700
+                box_love.rect.x = 1780
+                box_love.rect.y = 700
+                box_time.rect.x = 1980
+                box_time.rect.y = 700
+                love_symbol.rect.y = 820
+                love_symbol.rect.x = 2000
+                death_symbol.rect.y = 820
+                death_symbol.rect.x = 2600
+                time_symbol.rect.y = 820
+                time_symbol.rect.x = 2300
+                portal.rect.x = 2890
+                portal.rect.y = 600
 
             def draw_game():
                 draw_group.draw(display_game)
                 display_game.blit(player.image, [player.rect.x, player.rect.y])
-                display_game.blit(boo.image, [player.rect.x + main.boo_distance_x, player.rect.y - 15])
+                display_game.blit(box_time.image, [box_time.rect.x + main.scroll_display_x + main.force_box_time, box_time.rect.y])
+                display_game.blit(box_death.image, [box_death.rect.x + main.scroll_display_x + main.force_box_death, box_death.rect.y])
+                display_game.blit(box_love.image, [box_love.rect.x + main.scroll_display_x + main.force_box_love, box_love.rect.y])
+                display_game.blit(love_symbol.image, [love_symbol.rect.x + main.scroll_display_x, love_symbol.rect.y])
+                display_game.blit(time_symbol.image, [time_symbol.rect.x + main.scroll_display_x, time_symbol.rect.y])
+                display_game.blit(death_symbol.image, [death_symbol.rect.x + main.scroll_display_x, death_symbol.rect.y])
+                if main.box_death_love_time_solved:
+                    display_game.blit(portal.image, [portal.rect.x + main.scroll_display_x, portal.rect.y])
+                if not player.image_flipped:
+                    display_game.blit(boo.image, [player.rect.x - 25, player.rect.y])
+                else:
+                    display_game.blit(boo.image, [player.rect.x + 20, player.rect.y])
 
 
             for event in pygame.event.get():
@@ -619,12 +696,36 @@ class GameState():
                 main.call_started = 0
                 draw_initial()
 
-            if pygame.Rect.colliderect(player.rect, level_01b):
-                level_01b.width = 0
-                level_01b.height = 0
+            #
+            if pygame.Rect.colliderect(player.rect, hitbox_box_death):
+                if player.rect.x > hitbox_box_death.x and not main.force_box_death >= 1080:
+                    main.force_box_death -= 2
+                if player.rect.x < hitbox_box_death.x + (hitbox_box_death.w/2) and not main.force_box_death >= 1080:
+                    main.force_box_death += 2
+
+            if pygame.Rect.colliderect(player.rect, hitbox_box_time):
+                if player.rect.x < hitbox_box_time.x  and hitbox_box_time.x < 2600 and not main.force_box_time >= 300:
+                    main.force_box_time += 2
+                if player.rect.x < hitbox_box_time.x + (hitbox_box_time.w/2) and not main.force_box_time >= 300:
+                    main.force_box_time += 2
+
+            if pygame.Rect.colliderect(player.rect, hitbox_box_love):
+                if player.rect.x > hitbox_box_love.x and not main.force_box_love >= 202:
+                    main.force_box_love -= 2
+                if player.rect.x < hitbox_box_love.x + (hitbox_box_love.w/2) and not main.force_box_love >= 202:
+                    main.force_box_love += 2
+
+            if main.force_box_love >= 202 and main.force_box_time >= 300 and main.force_box_death >= 1080:
+                main.box_death_love_time_solved = True
+
+            if main.scroll_display_x <= -1938 and main.box_death_love_time_solved:
                 main.scroll_display_x = 0
                 main.call_started = 1
                 game_state.state = 'level_05'
+
+            # if main.box_death_love_time_solved:
+            # if pygame.Rect.colliderect(player.rect, portal_level_05):
+
 
             if main.scroll_display_x > 165:
                 main.blocking_player_left = True
@@ -642,7 +743,13 @@ class GameState():
             elif keys.get_pressed()[pygame.K_LEFT] and not main.blocking_player_left and not main.cutscene_onlevel:
                 main.scroll_display_x += main.scroll_speed_x
 
-
+            box_death.update()
+            box_time.update()
+            box_love.update()
+            portal.update()
+            death_symbol.update()
+            time_symbol.update()
+            love_symbol.update()
             boo.update()
             player.update()
             draw_group.update()
