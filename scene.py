@@ -28,10 +28,10 @@ class Scene():
         self.bg_level5 = pygame.image.load('images/bg/level5.png')
         self.bg_level5 = pygame.transform.scale(self.bg_level5, [3840, 1080])
         self.bg_level5_pos_x = 0
-        self.bg_level5_pos_y = -125
+        self.bg_level5_pos_y = -100
         self.bg_level5_ground = 625
         self.bg_level6 = pygame.image.load('images/bg/level6.png')
         self.bg_level6 = pygame.transform.scale(self.bg_level6, [3840, 1080])
         self.bg_level6_pos_x = 0
-        self.bg_level6_pos_y = -175
+        self.bg_level6_pos_y = -50
         self.bg_level6_ground = 625

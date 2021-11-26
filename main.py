@@ -215,6 +215,11 @@ oblis = Object(draw_group)
 oblis.image = pygame.image.load('sprites/entities/oblis/oblis - walk- frame7.png')
 oblis.width = 60
 oblis.height = 60
+# Tempo
+tempo = Object(draw_group)
+tempo.image = pygame.image.load('sprites/entities/tempo/tempo.png')
+tempo.width = 250
+tempo.height = 250
 
 # Portal
 portal = Object(draw_group)
@@ -329,6 +334,9 @@ puzzle_level5_solved = False
 
 # Condicao para passar cutscene
 running_initial_cutscene = True
+
+getting_ending = False
+final_fading = False
 
 class GameState():
     main.call_started
@@ -1014,7 +1022,7 @@ class GameState():
                 fade_to_black.fill((0, 0, 0))
 
             # Rects para passagem de mapa
-            portal_level_06 = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_display_x, 600, 68, 147))
+            portal_level_06 = pygame.draw.rect(display_game, (0, 0, 0), (2525 + main.scroll_display_x, 625, 44, 66))
             #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
 
             # Definindo BGS
@@ -1027,11 +1035,18 @@ class GameState():
                 butterfly.rect.y = 650
                 butterfly.width = 60
                 butterfly.height = 60
+                oblis.rect.x = 1720
+                oblis.rect.y = 650
+                oblis.width = 60
+                oblis.height = 60
+                portal.rect.x = 2500
+                portal.rect.y = 600
                 main.dialogue_onlevel5a = True
 
             def draw_game():
                 draw_group.draw(display_game)
                 display_game.blit(player.image, [player.rect.x, player.rect.y])
+                display_game.blit(portal.image, [portal.rect.x + main.scroll_display_x, portal.rect.y])
                 if main.butterfly_alive:
                     display_game.blit(butterfly.image, [butterfly.rect.x + main.scroll_display_x, butterfly.rect.y])
                 if not player.image_flipped:
@@ -1067,6 +1082,11 @@ class GameState():
                     main.butterfly_alive = False
                     main.cutscene_onlevel = True
 
+                # Oblis
+                if main.puzzle_level5_solved and main.dialogue_onlevel5c:
+                    display_game.blit(oblis.image, [oblis.rect.x + main.scroll_display_x, oblis.rect.y])
+
+                # Puzzle
                 if main.cutscene_onlevel and not main.puzzle_level5_solved:
                     mouse_position = pygame.mouse.get_pos()
                     backgroundrect = pygame.draw.rect(display_game, [0,0,0], [400, 250, 1060, 600])
@@ -1221,19 +1241,34 @@ class GameState():
                          # 18 9 14 1 4 5 9 18
                     if current_text_puzzle_digit_2 == 18 and current_text_puzzle_digit_3 == 9 and current_text_puzzle_digit_4 ==  14 and current_text_puzzle_digit_6 == 1 and current_text_puzzle_digit_7 == 4 and current_text_puzzle_digit_8 == 5 and current_text_puzzle_digit_9 == 9 and current_text_puzzle_digit_10 == 18:
                         main.puzzle_level5_solved = True
-
-                    if main.puzzle_level5_solved and main.cutscene_onlevel and not main.dialogue_onlevel5c:
+                    elif keys.get_pressed()[pygame.K_9]:
+                        main.puzzle_level5_solved = True
                         main.dialogue_onlevel5c = True
-                        if main.dialogue_onlevel5c:
-                            display_game.blit(main.texts_dialogue_level5c[main.current_text_dialogue_level5c], [960 - (main.texts_dialogue_level5c[main.current_text_dialogue_level5c].get_rect().width / 2), 800])
-                    # Passar diálogo
-                    if keys.get_pressed()[pygame.K_z] and main.dialogue_onlevel5c and main.current_text_dialogue_level5c < len(main.texts_dialogue_level5c):
-                        pygame.time.delay(500)
-                        main.current_text_dialogue_level5c += 1
-                        if main.current_text_dialogue_level5c >= len(main.texts_dialogue_level5c):
-                            main.current_text_dialogue_level5c = len(main.texts_dialogue_level5c) - 1
-                            main.dialogue_onlevel5c = False
 
+                if main.dialogue_onlevel5c:
+                    display_game.blit(main.texts_dialogue_level5c[main.current_text_dialogue_level5c], [960 - (main.texts_dialogue_level5c[main.current_text_dialogue_level5c].get_rect().width / 2), 800])
+
+                    # Passar diálogo
+                if keys.get_pressed()[pygame.K_z] and main.dialogue_onlevel5c and main.current_text_dialogue_level5c < len(main.texts_dialogue_level5c):
+                    pygame.time.delay(500)
+                    main.current_text_dialogue_level5c += 1
+                    if main.current_text_dialogue_level5c >= len(main.texts_dialogue_level5c):
+                        main.current_text_dialogue_level5c = len(main.texts_dialogue_level5c) - 1
+                        main.dialogue_onlevel5c = False
+                        main.dialogue_onlevel5d = True
+                        pygame.time.delay(500)
+
+                if main.dialogue_onlevel5d:
+                    display_game.blit(main.texts_dialogue_level5d[main.current_text_dialogue_level5d], [960 - (main.texts_dialogue_level5d[main.current_text_dialogue_level5d].get_rect().width / 2), 800])
+
+                    # Passar diálogo
+                if keys.get_pressed()[pygame.K_z] and main.dialogue_onlevel5d and main.current_text_dialogue_level5d < len(main.texts_dialogue_level5d):
+                    pygame.time.delay(500)
+                    main.current_text_dialogue_level5d += 1
+                    if main.current_text_dialogue_level5d >= len(main.texts_dialogue_level5d):
+                        main.current_text_dialogue_level5d = len(main.texts_dialogue_level5d) - 1
+                        main.dialogue_onlevel5d = False
+                        main.cutscene_onlevel = False
 
                 else:
                     pass
@@ -1255,8 +1290,6 @@ class GameState():
                     display_game.blit(fade_to_black, [0, 0])
                     pygame.display.update()
                     pygame.time.delay(5)
-                level_01b.width = 0
-                level_01b.height = 0
                 main.scroll_display_x = 0
                 main.call_started = 1
                 game_state.state = 'level_06'
@@ -1289,6 +1322,9 @@ class GameState():
     def level_06(self):
         if self.state == 'level_06':
             display_game.blit(scene.bg_level6, [scene.bg_level6_pos_x + main.scroll_display_x, scene.bg_level6_pos_y])
+            fade_to_black = pygame.Surface((1920, 1080))
+            if main.fadescreen_on:
+                fade_to_black.fill((0, 0, 0))
             # Rects para passagem de mapa
             #level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2500 + main.scroll_display_x, 600, 68, 147))
             #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
@@ -1296,15 +1332,58 @@ class GameState():
             # Definindo BGS
             def draw_initial():
                 player.rect.x = 925
+                tempo.rect.x = 2700
+                tempo.rect.y = 200
 
             def draw_game():
                 draw_group.draw(display_game)
                 display_game.blit(player.image, [player.rect.x, player.rect.y])
+                display_game.blit(tempo.image, [tempo.rect.x + main.scroll_display_x, tempo.rect.y])
                 if not player.image_flipped:
                     display_game.blit(boo.image, [player.rect.x - 25, player.rect.y])
                 else:
                     display_game.blit(boo.image, [player.rect.x + 20, player.rect.y])
 
+                if main.scroll_display_x <= -586 and not main.dialogue_onlevel6a and current_text_dialogue_level6a == 0:
+                    main.dialogue_onlevel6a = True
+                    main.cutscene_onlevel = True
+
+                if main.dialogue_onlevel6a:
+                    display_game.blit(main.texts_dialogue_level6a[main.current_text_dialogue_level6a], [960 - (main.texts_dialogue_level6a[main.current_text_dialogue_level6a].get_rect().width / 2), 800])
+                # Passar diálogo
+                if keys.get_pressed()[pygame.K_z] and main.dialogue_onlevel6a and main.current_text_dialogue_level6a < len(main.texts_dialogue_level6a):
+                    pygame.time.delay(500)
+                    main.current_text_dialogue_level6a += 1
+                    if main.current_text_dialogue_level6a >= len(main.texts_dialogue_level6a):
+                        main.current_text_dialogue_level6a = len(main.texts_dialogue_level6a) - 1
+                        main.dialogue_onlevel6a = False
+                        main.cutscene_onlevel = False
+
+                if main.scroll_display_x <= -1574:
+                    main.cutscene_onlevel = True
+                    main.dialogue_onlevel6b = True
+
+                if main.dialogue_onlevel6b:
+                    display_game.blit(main.texts_dialogue_level6b[main.current_text_dialogue_level6b], [960 - (main.texts_dialogue_level6b[main.current_text_dialogue_level6b].get_rect().width / 2), 800])
+                # Passar diálogo
+                if keys.get_pressed()[pygame.K_z] and main.dialogue_onlevel6b and main.current_text_dialogue_level6b < len(main.texts_dialogue_level6b):
+                    pygame.time.delay(500)
+                    main.current_text_dialogue_level6b += 1
+                    if main.current_text_dialogue_level6b >= len(main.texts_dialogue_level6b):
+                        main.current_text_dialogue_level6b = len(main.texts_dialogue_level6b) - 1
+                        main.dialogue_onlevel6b = False
+                        main.getting_ending = True
+
+                if main.getting_ending and not main.final_fading:
+                    main.final_fading = True
+                    pygame.mixer.music.fadeout(1000)
+                    pygame.mixer.music.load('musics/bgm/music_endinggame.ogg')
+                    pygame.mixer.music.play(-1, 0.0)
+                    for alpha in range(0, 300):
+                        fade_to_black.set_alpha(alpha)
+                        display_game.blit(fade_to_black, [0, 0])
+                        pygame.display.update()
+                        pygame.time.delay(50)
 
             for event in pygame.event.get():
                 # condicional para sair do loop
@@ -1335,6 +1414,7 @@ class GameState():
 
 
             boo.update()
+            tempo.update()
             player.update()
             draw_group.update()
             draw_game()
