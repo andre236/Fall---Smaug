@@ -1,3 +1,6 @@
+import os,sys
+dirpath=os.getcwd()
+sys.path.append(dirpath)
 import pygame
 from pygame.locals import *
 
@@ -8,7 +11,6 @@ from object import Object
 from boo import Boo
 from time import sleep
 from scene import Scene
-import sys
 
 # Inicializando os modulos do pygame
 pygame.init()
@@ -23,9 +25,7 @@ draw_group = pygame.sprite.Group()
 white = (255,255,255)
 black = (0, 0, 0)
 dialogue = False
-text_number_one = font.render("1", False, white)
-text_number_two = font.render("2", False, white)
-text_number_three = font.render("3", False, white)
+
 
 texts_dialogue_firstscene = []
 current_text_dialogue_firstscene = 0
@@ -555,18 +555,17 @@ class GameState():
         if self.state == 'level_01':
             display_game.blit(scene.bg_level, [scene.bg_level_pos_x + main.scroll_display_x, scene.bg_level_pos_y + main.scroll_display_y])
             # Rects para passagem de mapa
-            level_01b = pygame.draw.rect(display_game, (0, 0, 0), (2920 + main.scroll_display_x, 635 + main.scroll_display_y, 34, 65))
+            level_02 = pygame.draw.rect(display_game, (0, 0, 0), (2920 + main.scroll_display_x, 635 + main.scroll_display_y, 34, 65))
             #hitbox_player = pygame.draw.rect(display_game, (123, 123,123), (player.rect.x, player.rect.y, player.rect.width, player.rect.height))
             fade_to_black = pygame.Surface((1920, 1080))
             if main.fadescreen_on:
                 fade_to_black.fill((0, 0, 0))
 
-
             # Definindo BGS
             def draw_initial():
+                draw_group.empty()
                 pygame.mixer.music.load('musics/bgm/bgm_level1.ogg')
                 pygame.mixer.music.play(-1, 0.0)
-                game_state.state = 'level_01'
                 player.rect.x = 925
                 portal.rect.x = 2900
                 portal.rect.y = 600
@@ -578,18 +577,17 @@ class GameState():
                 display_game.blit(portal.image, [portal.rect.x + main.scroll_display_x, portal.rect.y])
                 if main.boo_distance_x > 30:
                     main.cutscene_onlevel = True
-                    main.boo_distance_x -= 2
-                else:
-                    #
-                    if main.cutscene_onlevel:
-                        display_game.blit(main.texts_dialogue_firstscene[main.current_text_dialogue_firstscene], [960 - (main.texts_dialogue_firstscene[main.current_text_dialogue_firstscene].get_rect().width / 2), 900])
+                    main.boo_distance_x -= 5
+
+                if main.cutscene_onlevel and boo_distance_x <= 30:
+                    display_game.blit(main.texts_dialogue_firstscene[main.current_text_dialogue_firstscene], [960 - (main.texts_dialogue_firstscene[main.current_text_dialogue_firstscene].get_rect().width / 2), 900])
                     # Passar diálogo
-                    if keys.get_pressed()[pygame.K_z] and main.cutscene_onlevel and main.current_text_dialogue_firstscene< len(main.texts_dialogue_firstscene):
-                        pygame.time.delay(1000)
-                        main.current_text_dialogue_firstscene += 1
-                        if main.current_text_dialogue_firstscene >= len(main.texts_dialogue_firstscene):
-                            main.current_text_dialogue_firstscene = len(main.texts_dialogue_firstscene) - 1
-                            main.cutscene_onlevel = False
+                if keys.get_pressed()[pygame.K_z] and main.cutscene_onlevel and main.current_text_dialogue_firstscene< len(main.texts_dialogue_firstscene):
+                    pygame.time.delay(1000)
+                    main.current_text_dialogue_firstscene += 1
+                    if main.current_text_dialogue_firstscene >= len(main.texts_dialogue_firstscene):
+                        main.current_text_dialogue_firstscene = len(main.texts_dialogue_firstscene) - 1
+                        main.cutscene_onlevel = False
 
             for event in pygame.event.get():
                 # condicional para sair do loop
@@ -602,15 +600,13 @@ class GameState():
                 main.call_started = 0
                 draw_initial()
 
-            if pygame.Rect.colliderect(player.rect, level_01b):
+            if pygame.Rect.colliderect(player.rect, level_02):
                 main.fadescreen_on = True
                 for alpha in range(0, 300):
                     fade_to_black.set_alpha(alpha)
                     display_game.blit(fade_to_black, [0, 0])
                     pygame.display.update()
                     pygame.time.delay(5)
-                level_01b.width = 0
-                level_01b.height = 0
                 main.scroll_display_x = 0
                 main.call_started = 1
                 game_state.state = 'level_02'
@@ -632,6 +628,7 @@ class GameState():
                 main.scroll_display_x += main.scroll_speed_x
 
             boo.update()
+            portal.update()
             player.update()
             draw_group.update()
             draw_game()
@@ -679,9 +676,6 @@ class GameState():
                     display_game.blit(boo.image, [player.rect.x - 25, player.rect.y])
                 else:
                     display_game.blit(boo.image, [player.rect.x + 20, player.rect.y])
-
-
-
 
             if main.cutscene_onlevel and not main.butterfly_alive:
                 display_game.blit(main.texts_dialogue_butterflyscene[main.current_text_dialogue_butterflyscene], [960 - (main.texts_dialogue_butterflyscene[main.current_text_dialogue_butterflyscene].get_rect().width / 2), 900])
@@ -1035,6 +1029,7 @@ class GameState():
                 butterfly.rect.y = 650
                 butterfly.width = 60
                 butterfly.height = 60
+                main.butterfly_alive = True
                 oblis.rect.x = 1720
                 oblis.rect.y = 650
                 oblis.width = 60
@@ -1042,6 +1037,7 @@ class GameState():
                 portal.rect.x = 2500
                 portal.rect.y = 600
                 main.dialogue_onlevel5a = True
+                main.puzzle_level5_solved = False
 
             def draw_game():
                 draw_group.draw(display_game)
@@ -1241,6 +1237,7 @@ class GameState():
                          # 18 9 14 1 4 5 9 18
                     if current_text_puzzle_digit_2 == 18 and current_text_puzzle_digit_3 == 9 and current_text_puzzle_digit_4 ==  14 and current_text_puzzle_digit_6 == 1 and current_text_puzzle_digit_7 == 4 and current_text_puzzle_digit_8 == 5 and current_text_puzzle_digit_9 == 9 and current_text_puzzle_digit_10 == 18:
                         main.puzzle_level5_solved = True
+                        main.dialogue_onlevel5c = True
                     elif keys.get_pressed()[pygame.K_9]:
                         main.puzzle_level5_solved = True
                         main.dialogue_onlevel5c = True
@@ -1311,6 +1308,7 @@ class GameState():
                 main.scroll_display_x += main.scroll_speed_x
 
             butterfly.update()
+            oblis.update()
             boo.update()
             player.update()
             draw_group.update()
